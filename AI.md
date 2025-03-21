@@ -12,5 +12,22 @@ them by categories; otherwise, whatever works best for you is best. You may stor
 as well as any instructions for yourself to make your work more efficient and correct.
 
 ## Project design
-TBD.
+The project is a simple, client-side transcription playground for comparing different OpenAI transcription models. The implementation:
+
+- Runs entirely in the browser (no server component)
+- Uses vanilla HTML/CSS/JavaScript (no build step required)
+- No external dependencies
+- Features:
+  - Audio file upload
+  - Model selection (whisper-1, gpt-4o-mini-transcribe, gpt-4o-transcribe)
+  - Language selection (defaults to Norwegian)
+  - Transcription results display
+  - Error handling
+
+Directory structure:
+- index.html (main entry point)
+- css/styles.css (styling)
+- js/models.js (model definitions)
+- js/api.js (OpenAI API integration)
+- js/app.js (application logic)
 
