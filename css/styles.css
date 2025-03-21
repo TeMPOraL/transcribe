@@ -222,3 +222,88 @@ input[type="file"] {
     color: #666;
     margin-top: 4px;
 }
+
+/* Model selection checkboxes */
+.model-checkbox-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.model-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.model-checkbox input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Results display */
+#results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.result-card {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.result-header {
+    background-color: #f5f7f9;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.model-name {
+    font-size: 16px;
+}
+
+.processing-time {
+    font-size: 14px;
+    color: #666;
+}
+
+.no-results-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Error text in result cards */
+.error-text {
+    color: var(--error-color);
+    font-style: italic;
+}
+
+/* Textarea styling in result cards */
+.result-container textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    border: none;
+    font-size: 16px;
+    resize: vertical;
+}
+
+/* For side-by-side view on larger screens */
+@media (min-width: 768px) {
+    #results-container.side-by-side {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    #results-container.side-by-side .result-card {
+        flex: 1 1 45%;
+        min-width: 250px;
+    }
+}

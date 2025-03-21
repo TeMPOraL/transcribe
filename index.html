@@ -18,12 +18,21 @@
             </div>
             
             <div class="form-group">
-                <label for="model-select">Transcription Model:</label>
-                <select id="model-select">
-                    <option value="whisper-1">whisper-1</option>
-                    <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
-                    <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
-                </select>
+                <label>Transcription Models:</label>
+                <div class="model-checkbox-container">
+                    <div class="model-checkbox">
+                        <input type="checkbox" id="whisper-1-model" value="whisper-1" checked>
+                        <label for="whisper-1-model">whisper-1</label>
+                    </div>
+                    <div class="model-checkbox">
+                        <input type="checkbox" id="gpt-4o-mini-transcribe-model" value="gpt-4o-mini-transcribe">
+                        <label for="gpt-4o-mini-transcribe-model">gpt-4o-mini-transcribe</label>
+                    </div>
+                    <div class="model-checkbox">
+                        <input type="checkbox" id="gpt-4o-transcribe-model" value="gpt-4o-transcribe">
+                        <label for="gpt-4o-transcribe-model">gpt-4o-transcribe</label>
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
@@ -45,8 +54,9 @@
         
         <div class="results-panel">
             <h2>Transcription Results</h2>
-            <div class="result-container">
-                <textarea id="transcription-result" readonly placeholder="Transcription will appear here..."></textarea>
+            <div id="results-container">
+                <!-- Results will be added here dynamically -->
+                <div class="no-results-message">Select models and transcribe to see results</div>
             </div>
             <div id="error-message" class="error-box hidden"></div>
         </div>
