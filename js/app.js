@@ -84,11 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Wait for all transcriptions to complete
             await Promise.all(transcriptionPromises);
             
-            // Enable compare button if multiple transcriptions succeeded
-            const successfulTranscriptions = resultsManager.getStoredModelIds();
-            if (successfulTranscriptions.length >= 2) {
-                compareBtn.disabled = false;
-            }
+            // Compare button is disabled in this version
+            compareBtn.disabled = true;
         } catch (error) {
             console.error('One or more transcriptions failed:', error);
             // Individual errors are handled in processTranscription
@@ -99,9 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Handle compare button click
+    // Compare button is disabled in this version
     compareBtn.addEventListener('click', () => {
-        resultsManager.showComparison();
+        // Functionality removed
     });
     
     // Process transcription for a single model
