@@ -30,4 +30,8 @@ Directory structure:
 - js/models.js (model definitions)
 - js/api.js (OpenAI API integration)
 - js/app.js (application logic)
+- js/results.js (results management and UI)
+- js/settings.js (API key and settings management)
+- js/toast.js (toast notification system)
+- AI.md (AI instruction file)
 
