@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 audioPlayerContainer.classList.add('hidden');
             }
+            
+            // Set current file in results manager (handles caching logic)
+            resultsManager.setCurrentFile(selectedFile.name);
         } else {
             fileDetails.textContent = '';
             audioPlayerContainer.classList.add('hidden');

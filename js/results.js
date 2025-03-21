@@ -4,6 +4,8 @@ class ResultsManager {
         this.resultsContainer = document.getElementById(containerId);
         this.transcriptionStore = {}; // Store for completed transcriptions
         this.selectedResults = new Set(); // Track selected results for analysis
+        this.fileTranscriptionCache = {}; // Cache for transcriptions by filename
+        this.currentFilename = null; // Track current filename
     }
 
     // Clear all results
@@ -85,6 +87,13 @@ class ResultsManager {
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'result-actions';
         
+        // Add rerun button
+        const rerunBtn = document.createElement('button');
+        rerunBtn.className = 'action-btn rerun-btn';
+        rerunBtn.innerHTML = '<span title="Re-run transcription">🔄</span>';
+        rerunBtn.addEventListener('click', () => this.runTranscription(modelId));
+        actionsContainer.appendChild(rerunBtn);
+        
         // Add elements to header - in the requested order
         header.appendChild(checkbox);
         header.appendChild(playBtn);
@@ -111,7 +120,7 @@ class ResultsManager {
     }
 
     // Update a result card with transcription results
-    updateResultCard(modelId, content, processingTime = null, isError = false) {
+    updateResultCard(modelId, content, processingTime = null, isError = false, fromCache = false) {
         const resultCard = document.getElementById(`result-${modelId}`);
         
         if (resultCard) {
@@ -119,11 +128,13 @@ class ResultsManager {
             textarea.value = content;
             if (isError) {
                 textarea.classList.add('error-text');
+            } else {
+                textarea.classList.remove('error-text');
             }
             
             if (processingTime) {
                 const timeEl = resultCard.querySelector('.processing-time');
-                timeEl.textContent = `(${processingTime}s)`;
+                timeEl.textContent = `(${processingTime}s)${fromCache ? ' [cached]' : ''}`;
             }
             
             // Update or create toggle button for expand/collapse
@@ -134,6 +145,9 @@ class ResultsManager {
                 toggleBtn = resultCard.toggleBtn;
                 toggleBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
             }
+            
+            // Ensure rerun button exists
+            this.ensureRerunButtonExists(resultCard, modelId);
             
             // Add copy and download buttons if they don't exist
             const actionsContainer = resultCard.querySelector('.result-actions');
@@ -153,8 +167,21 @@ class ResultsManager {
                 actionsContainer.appendChild(downloadBtn);
             }
             
-            // Store the transcription
-            this.storeTranscription(modelId, content, processingTime);
+            // Show the transcription
+            resultCard.querySelector('.result-container').style.display = 'block';
+            
+            // Enable checkbox for analysis
+            const checkbox = resultCard.querySelector('.result-select');
+            checkbox.disabled = false;
+            
+            // Add appropriate class based on error status
+            resultCard.classList.remove('success-card', 'error-card');
+            resultCard.classList.add(isError ? 'error-card' : 'success-card');
+            
+            // Store the transcription (if not from cache)
+            if (!fromCache) {
+                this.storeTranscription(modelId, content, processingTime);
+            }
         }
     }
     
@@ -235,6 +262,150 @@ class ResultsManager {
             }, 100);
             
             toast.show(`Downloaded ${modelName} transcription`);
+        }
+    }
+    
+    // Set current file and handle switching between files
+    setCurrentFile(filename) {
+        if (!filename) return;
+        
+        // If switching to a different file, save current transcriptions
+        if (this.currentFilename && this.currentFilename !== filename) {
+            this.saveToCache(this.currentFilename);
+        }
+        
+        this.currentFilename = filename;
+        
+        // Check if we have cached transcriptions for this file
+        if (this.fileTranscriptionCache[filename]) {
+            // Restore transcriptions from cache
+            this.restoreFromCache(filename);
+        } else {
+            // New file - reset the interface
+            this.resetInterface();
+        }
+    }
+
+    // Save current transcriptions to cache
+    saveToCache(filename) {
+        if (!filename || Object.keys(this.transcriptionStore).length === 0) return;
+        
+        this.fileTranscriptionCache[filename] = JSON.parse(JSON.stringify(this.transcriptionStore));
+    }
+
+    // Restore transcriptions from cache
+    restoreFromCache(filename) {
+        if (!this.fileTranscriptionCache[filename]) return;
+        
+        // Reset current store
+        this.transcriptionStore = {};
+        this.selectedResults.clear();
+        
+        // Restore from cache
+        const cachedData = this.fileTranscriptionCache[filename];
+        this.transcriptionStore = JSON.parse(JSON.stringify(cachedData));
+        
+        // Update UI for each model
+        Object.keys(TRANSCRIPTION_MODELS).forEach(modelId => {
+            if (cachedData[modelId]) {
+                // Restore this model's data from cache
+                this.updateResultCardFromCache(modelId, cachedData[modelId]);
+            } else {
+                // Reset this model (no cached data)
+                this.resetResultCard(modelId);
+            }
+        });
+        
+        this.updateAnalyzeButtons();
+    }
+
+    // Reset the interface for a new file
+    resetInterface() {
+        // Clear current transcriptions
+        this.transcriptionStore = {};
+        this.selectedResults.clear();
+        
+        // Reset all model cards
+        Object.keys(TRANSCRIPTION_MODELS).forEach(modelId => {
+            this.resetResultCard(modelId);
+        });
+        
+        this.updateAnalyzeButtons();
+    }
+
+    // Update a result card from cached data
+    updateResultCardFromCache(modelId, cachedData) {
+        this.updateResultCard(
+            modelId, 
+            cachedData.content, 
+            cachedData.processingTime,
+            false, // Not an error
+            true   // Is from cache
+        );
+    }
+
+    // Reset a single result card to initial state
+    resetResultCard(modelId) {
+        const resultCard = document.getElementById(`result-${modelId}`);
+        if (!resultCard) return;
+        
+        // Get elements in card
+        const timeEl = resultCard.querySelector('.processing-time');
+        const checkbox = resultCard.querySelector('.result-select');
+        const textarea = resultCard.querySelector('textarea');
+        const resultContainer = resultCard.querySelector('.result-container');
+        
+        // Reset UI elements
+        textarea.value = '';
+        textarea.classList.remove('error-text');
+        timeEl.textContent = '(not run)';
+        checkbox.disabled = true;
+        checkbox.checked = false;
+        resultContainer.style.display = 'none';
+        resultCard.classList.remove('success-card', 'error-card');
+        
+        // Ensure play button is present
+        this.ensurePlayButton(resultCard, modelId);
+        
+        // Ensure rerun button exists
+        this.ensureRerunButtonExists(resultCard, modelId);
+    }
+
+    // Make sure play button exists
+    ensurePlayButton(resultCard, modelId) {
+        let playBtn = resultCard.querySelector('.play-btn');
+        const toggleBtn = resultCard.querySelector('.toggle-btn');
+        
+        if (!playBtn && toggleBtn) {
+            // Replace toggle with play button
+            playBtn = document.createElement('button');
+            playBtn.className = 'action-btn play-btn';
+            playBtn.innerHTML = '<span title="Run transcription">▶️</span>';
+            playBtn.dataset.modelId = modelId;
+            playBtn.addEventListener('click', () => this.runTranscription(modelId));
+            
+            toggleBtn.parentNode.replaceChild(playBtn, toggleBtn);
+        } else if (playBtn) {
+            // Reset existing play button
+            playBtn.innerHTML = '<span title="Run transcription">▶️</span>';
+            playBtn.disabled = false;
+        }
+    }
+
+    // Add rerun button if it doesn't exist
+    ensureRerunButtonExists(resultCard, modelId) {
+        const actionsContainer = resultCard.querySelector('.result-actions');
+        if (!actionsContainer) return;
+        
+        let rerunBtn = actionsContainer.querySelector('.rerun-btn');
+        
+        if (!rerunBtn) {
+            rerunBtn = document.createElement('button');
+            rerunBtn.className = 'action-btn rerun-btn';
+            rerunBtn.innerHTML = '<span title="Re-run transcription">🔄</span>';
+            rerunBtn.addEventListener('click', () => this.runTranscription(modelId));
+            
+            actionsContainer.appendChild(rerunBtn);
         }
     }
     
