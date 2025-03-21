@@ -408,3 +408,23 @@ input[type="file"] {
     font-size: 12px;
     padding: 2px;
 }
+
+/* Success and error card states */
+.success-card .result-header {
+    background-color: rgba(46, 204, 113, 0.15);
+}
+
+.error-card .result-header {
+    background-color: rgba(231, 76, 60, 0.15);
+}
+
+/* Loading animation */
+@keyframes rotating {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.play-btn span[title="Transcribing..."] {
+    display: inline-block;
+    animation: rotating 2s linear infinite;
+}

@@ -38,10 +38,9 @@ class ResultsManager {
     }
 
     // Create a result card for a model
-    createResultCard(modelId, initialContent = '', processingTime = null, isError = false) {
+    createResultCard(modelId) {
         const modelInfo = TRANSCRIPTION_MODELS[modelId];
         const modelName = modelInfo ? `openai/${modelInfo.name.toLowerCase()}` : modelId;
-        const isNotRun = initialContent === 'Processing...';
         
         const resultCard = document.createElement('div');
         resultCard.className = 'result-card';
@@ -56,6 +55,7 @@ class ResultsManager {
         checkbox.type = 'checkbox';
         checkbox.id = `select-${modelId}`;
         checkbox.className = 'result-select';
+        checkbox.disabled = true; // Disabled until transcription is successful
         checkbox.addEventListener('change', () => this.toggleResultSelection(modelId));
         
         // Model name and processing time
@@ -69,11 +69,7 @@ class ResultsManager {
         
         const timeEl = document.createElement('span');
         timeEl.className = 'processing-time';
-        if (processingTime) {
-            timeEl.textContent = `(${processingTime}s)`;
-        } else if (isNotRun) {
-            timeEl.textContent = '(not run)';
-        }
+        timeEl.textContent = '(not run)';
         
         modelLabel.appendChild(modelNameEl);
         modelLabel.appendChild(timeEl);
@@ -82,55 +78,28 @@ class ResultsManager {
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'result-actions';
         
-        // Add copy and download buttons only if not in "not run" state
-        if (!isNotRun) {
-            // Copy button
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'action-btn copy-btn';
-            copyBtn.innerHTML = '<span title="Copy to clipboard">📋</span>';
-            copyBtn.addEventListener('click', () => this.copyTranscription(modelId));
-            
-            // Download button
-            const downloadBtn = document.createElement('button');
-            downloadBtn.className = 'action-btn download-btn';
-            downloadBtn.innerHTML = '<span title="Download as text file">💾</span>';
-            downloadBtn.addEventListener('click', () => this.downloadTranscription(modelId));
-            
-            actionsContainer.appendChild(copyBtn);
-            actionsContainer.appendChild(downloadBtn);
-        }
+        // Play button
+        const playBtn = document.createElement('button');
+        playBtn.className = 'action-btn play-btn';
+        playBtn.innerHTML = '<span title="Run transcription">▶️</span>';
+        playBtn.dataset.modelId = modelId;
+        playBtn.addEventListener('click', () => this.runTranscription(modelId));
         
-        // Toggle button
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'action-btn toggle-btn';
-        toggleBtn.innerHTML = isNotRun ? '<span title="Run this model">▶</span>' : '<span title="Show/hide transcription">▼</span>';
-        toggleBtn.addEventListener('click', () => {
-            if (isNotRun) {
-                // Logic to run a single model will be implemented later
-                toast.show('Single model run not implemented yet');
-            } else {
-                this.toggleTranscriptionVisibility(modelId);
-            }
-        });
-        
-        actionsContainer.appendChild(toggleBtn);
+        actionsContainer.appendChild(playBtn);
         
         // Add elements to header
         header.appendChild(checkbox);
         header.appendChild(modelLabel);
         header.appendChild(actionsContainer);
         
-        // Content container (initially expanded for results, collapsed for "not run")
+        // Content container (hidden initially)
         const resultContainer = document.createElement('div');
         resultContainer.className = 'result-container';
-        if (isNotRun) {
-            resultContainer.style.display = 'none';
-        }
+        resultContainer.style.display = 'none';
         
         const textarea = document.createElement('textarea');
-        textarea.className = isError ? 'error-text' : '';
         textarea.readOnly = true;
-        textarea.value = initialContent;
+        textarea.value = '';
         
         resultContainer.appendChild(textarea);
         
@@ -262,6 +231,112 @@ class ResultsManager {
             }, 100);
             
             toast.show(`Downloaded ${modelName} transcription`);
+        }
+    }
+    
+    // Run transcription for a single model
+    async runTranscription(modelId) {
+        const resultCard = document.getElementById(`result-${modelId}`);
+        if (!resultCard) return;
+        
+        const playBtn = resultCard.querySelector('.play-btn');
+        const timeEl = resultCard.querySelector('.processing-time');
+        const checkbox = resultCard.querySelector('.result-select');
+        const textarea = resultCard.querySelector('textarea');
+        
+        // Verify that an audio file is selected
+        const audioFile = document.getElementById('audio-file').files[0];
+        if (!audioFile) {
+            toast.show('Please select an audio file first');
+            return;
+        }
+        
+        // Check if OpenAI API key is present
+        const apiKey = localStorage.getItem('openai_api_key');
+        if (!apiKey) {
+            toast.show('Please set your OpenAI API key in Settings');
+            return;
+        }
+        
+        // Update UI to loading state
+        playBtn.innerHTML = '<span title="Transcribing...">🔄</span>';
+        playBtn.disabled = true;
+        timeEl.textContent = '(transcribing...)';
+        resultCard.classList.remove('success-card', 'error-card');
+        
+        const startTime = performance.now();
+        const language = document.getElementById('language').value;
+        
+        try {
+            const api = new TranscriptionAPI();
+            const result = await api.transcribe(
+                apiKey,
+                audioFile,
+                modelId,
+                language
+            );
+            
+            const endTime = performance.now();
+            const processingTime = ((endTime - startTime) / 1000).toFixed(2);
+            
+            // Update result card with success state
+            playBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
+            playBtn.className = 'action-btn toggle-btn';
+            playBtn.disabled = false;
+            playBtn.addEventListener('click', () => this.toggleTranscriptionVisibility(modelId));
+            
+            // Add copy and download buttons
+            const actionsContainer = resultCard.querySelector('.result-actions');
+            
+            // Only add buttons if they don't already exist
+            if (!actionsContainer.querySelector('.copy-btn')) {
+                // Copy button
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'action-btn copy-btn';
+                copyBtn.innerHTML = '<span title="Copy to clipboard">📋</span>';
+                copyBtn.addEventListener('click', () => this.copyTranscription(modelId));
+                
+                // Download button
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'action-btn download-btn';
+                downloadBtn.innerHTML = '<span title="Download as text file">💾</span>';
+                downloadBtn.addEventListener('click', () => this.downloadTranscription(modelId));
+                
+                // Insert before the toggle button
+                actionsContainer.insertBefore(copyBtn, playBtn);
+                actionsContainer.insertBefore(downloadBtn, playBtn);
+            }
+            
+            // Update UI
+            timeEl.textContent = `(${processingTime}s)`;
+            textarea.value = result;
+            textarea.classList.remove('error-text');
+            resultCard.classList.add('success-card');
+            
+            // Show the transcription
+            resultCard.querySelector('.result-container').style.display = 'block';
+            
+            // Enable checkbox for analysis
+            checkbox.disabled = false;
+            
+            // Store the transcription
+            this.storeTranscription(modelId, result, processingTime);
+            
+        } catch (error) {
+            // Update UI for error state
+            playBtn.innerHTML = '<span title="Try again">🔄</span>';
+            playBtn.disabled = false;
+            playBtn.className = 'action-btn play-btn';
+            
+            timeEl.textContent = '(error)';
+            textarea.value = `Error: ${error.message || 'Failed to transcribe audio'}`;
+            textarea.classList.add('error-text');
+            resultCard.classList.add('error-card');
+            
+            // Show the error message
+            resultCard.querySelector('.result-container').style.display = 'block';
+            
+            console.error(`Transcription error for ${modelId}:`, error);
         }
     }
     
