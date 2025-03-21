@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileDetails = document.getElementById('file-details');
     const languageInput = document.getElementById('language');
     const transcribeBtn = document.getElementById('transcribe-btn');
+    const compareBtn = document.getElementById('compare-btn');
     const errorMessage = document.getElementById('error-message');
     
     // Get all model checkboxes
@@ -82,6 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Wait for all transcriptions to complete
             await Promise.all(transcriptionPromises);
+            
+            // Enable compare button if multiple transcriptions succeeded
+            const successfulTranscriptions = resultsManager.getStoredModelIds();
+            if (successfulTranscriptions.length >= 2) {
+                compareBtn.disabled = false;
+            }
         } catch (error) {
             console.error('One or more transcriptions failed:', error);
             // Individual errors are handled in processTranscription
@@ -90,6 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
             transcribeBtn.disabled = false;
             transcribeBtn.textContent = 'Transcribe';
         }
+    });
+    
+    // Handle compare button click
+    compareBtn.addEventListener('click', () => {
+        resultsManager.showComparison();
     });
     
     // Process transcription for a single model
