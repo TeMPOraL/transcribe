@@ -2,6 +2,7 @@
 class ResultsManager {
     constructor(containerId) {
         this.resultsContainer = document.getElementById(containerId);
+        this.transcriptionStore = {}; // Store for completed transcriptions
     }
 
     // Clear all results
@@ -16,6 +17,30 @@ class ResultsManager {
         } else {
             this.resultsContainer.classList.remove('side-by-side');
         }
+    }
+
+    // Store transcription result
+    storeTranscription(modelId, content, processingTime) {
+        this.transcriptionStore[modelId] = {
+            content: content,
+            processingTime: processingTime,
+            timestamp: new Date().toISOString()
+        };
+    }
+
+    // Check if we already have a transcription for this model
+    hasStoredTranscription(modelId) {
+        return !!this.transcriptionStore[modelId];
+    }
+
+    // Get stored transcription
+    getStoredTranscription(modelId) {
+        return this.transcriptionStore[modelId];
+    }
+
+    // Get all stored model IDs
+    getStoredModelIds() {
+        return Object.keys(this.transcriptionStore);
     }
 
     // Create a result card for a model
