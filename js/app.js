@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('audio-file');
     const fileDetails = document.getElementById('file-details');
     const errorMessage = document.getElementById('error-message');
+    const audioPlayerContainer = document.getElementById('audio-player-container');
+    const audioPreview = document.getElementById('audio-preview');
     
     let selectedFile = null;
     
@@ -19,8 +21,23 @@ document.addEventListener('DOMContentLoaded', () => {
             // Display file details
             const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
             fileDetails.textContent = `${selectedFile.name} (${fileSizeMB} MB)`;
+            
+            // Set up audio player if it's an audio file
+            if (selectedFile.type.startsWith('audio/')) {
+                const audioURL = URL.createObjectURL(selectedFile);
+                audioPreview.src = audioURL;
+                audioPlayerContainer.classList.remove('hidden');
+                
+                // Clean up object URL when audio is done
+                audioPreview.onloadedmetadata = () => {
+                    console.log(`Audio duration: ${audioPreview.duration.toFixed(2)}s`);
+                };
+            } else {
+                audioPlayerContainer.classList.add('hidden');
+            }
         } else {
             fileDetails.textContent = '';
+            audioPlayerContainer.classList.add('hidden');
         }
     });
     

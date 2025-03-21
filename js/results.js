@@ -46,9 +46,16 @@ class ResultsManager {
         resultCard.className = 'result-card';
         resultCard.id = `result-${modelId}`;
         
-        // Create header with checkbox, model name, and status
+        // Create header with play button, checkbox, model name, and status
         const header = document.createElement('div');
         header.className = 'result-header';
+        
+        // Play button - now positioned first
+        const playBtn = document.createElement('button');
+        playBtn.className = 'action-btn play-btn';
+        playBtn.innerHTML = '<span title="Run transcription">▶️</span>';
+        playBtn.dataset.modelId = modelId;
+        playBtn.addEventListener('click', () => this.runTranscription(modelId));
         
         // Checkbox for selecting results
         const checkbox = document.createElement('input');
@@ -74,20 +81,12 @@ class ResultsManager {
         modelLabel.appendChild(modelNameEl);
         modelLabel.appendChild(timeEl);
         
-        // Action buttons container
+        // Action buttons container for other actions
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'result-actions';
         
-        // Play button
-        const playBtn = document.createElement('button');
-        playBtn.className = 'action-btn play-btn';
-        playBtn.innerHTML = '<span title="Run transcription">▶️</span>';
-        playBtn.dataset.modelId = modelId;
-        playBtn.addEventListener('click', () => this.runTranscription(modelId));
-        
-        actionsContainer.appendChild(playBtn);
-        
-        // Add elements to header
+        // Add elements to header - note the new order
+        header.appendChild(playBtn);
         header.appendChild(checkbox);
         header.appendChild(modelLabel);
         header.appendChild(actionsContainer);
@@ -128,8 +127,13 @@ class ResultsManager {
             }
             
             // Update toggle button to "▼" (expand/collapse)
-            const toggleBtn = resultCard.querySelector('.toggle-btn');
-            toggleBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
+            let toggleBtn = resultCard.querySelector('.toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
+            } else if (resultCard.toggleBtn) {
+                toggleBtn = resultCard.toggleBtn;
+                toggleBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
+            }
             
             // Add copy and download buttons if they don't exist
             const actionsContainer = resultCard.querySelector('.result-actions');
@@ -280,10 +284,16 @@ class ResultsManager {
             const processingTime = ((endTime - startTime) / 1000).toFixed(2);
             
             // Update result card with success state
-            playBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
-            playBtn.className = 'action-btn toggle-btn';
-            playBtn.disabled = false;
-            playBtn.addEventListener('click', () => this.toggleTranscriptionVisibility(modelId));
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'action-btn toggle-btn';
+            toggleBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
+            toggleBtn.addEventListener('click', () => this.toggleTranscriptionVisibility(modelId));
+            
+            // Replace the play button with this toggle button
+            playBtn.parentNode.replaceChild(toggleBtn, playBtn);
+            
+            // Store a reference to the toggle button for later use
+            resultCard.toggleBtn = toggleBtn;
             
             // Add copy and download buttons
             const actionsContainer = resultCard.querySelector('.result-actions');
