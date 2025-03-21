@@ -344,55 +344,67 @@ input[type="file"] {
     opacity: 1;
 }
 
-/* Comparison view */
-.comparison-container {
+/* New UI layout styles */
+.section {
     background-color: var(--panel-color);
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    margin: 20px 0;
-}
-
-.comparison-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.comparison-table {
-    width: 100%;
-    border-collapse: collapse;
     margin-bottom: 20px;
 }
 
-.comparison-table th, 
-.comparison-table td {
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    vertical-align: top;
-}
-
-.comparison-table th {
+/* Result card header with checkbox */
+.result-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
     background-color: #f5f7f9;
-    text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.comparison-text {
-    white-space: pre-wrap;
-    max-height: 300px;
-    overflow-y: auto;
+.result-select {
+    margin-right: 10px;
 }
 
-/* For side-by-side view on larger screens */
-@media (min-width: 768px) {
-    #results-container.side-by-side {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    #results-container.side-by-side .result-card {
-        flex: 1 1 45%;
-        min-width: 250px;
-    }
+.model-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* Analyze section */
+.analyze-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.analyze-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.analyze-btn:hover:not(:disabled) {
+    background-color: var(--secondary-color);
+}
+
+.analyze-btn:disabled {
+    background-color: var(--border-color);
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Updated toggle button */
+.toggle-btn span {
+    font-size: 12px;
+    padding: 2px;
 }

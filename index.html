@@ -10,58 +10,61 @@
     <div class="container">
         <h1>Transcription Playground</h1>
         
-        <div class="settings-panel">
+        <div class="section">
+            <h2>Configure</h2>
             <div class="form-group">
-                <label for="audio-file">Audio File:</label>
+                <label for="audio-file">Audio file:</label>
                 <input type="file" id="audio-file" accept="audio/*">
                 <div id="file-details"></div>
             </div>
             
             <div class="form-group">
-                <label>Transcription Models:</label>
-                <div class="model-checkbox-container">
-                    <div class="model-checkbox">
-                        <input type="checkbox" id="whisper-1-model" value="whisper-1" checked>
-                        <label for="whisper-1-model">whisper-1</label>
-                    </div>
-                    <div class="model-checkbox">
-                        <input type="checkbox" id="gpt-4o-mini-transcribe-model" value="gpt-4o-mini-transcribe">
-                        <label for="gpt-4o-mini-transcribe-model">gpt-4o-mini-transcribe</label>
-                    </div>
-                    <div class="model-checkbox">
-                        <input type="checkbox" id="gpt-4o-transcribe-model" value="gpt-4o-transcribe">
-                        <label for="gpt-4o-transcribe-model">gpt-4o-transcribe</label>
-                    </div>
+                <label for="language">Language code (optional, e.g. "nb", "en"):</label>
+                <input type="text" id="language" value="nb">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Transcribe</h2>
+            <div class="model-checkbox-container">
+                <div class="model-checkbox">
+                    <input type="checkbox" id="whisper-1-model" value="whisper-1" checked>
+                    <label for="whisper-1-model">openai/whisper-1</label>
+                </div>
+                <div class="model-checkbox">
+                    <input type="checkbox" id="gpt-4o-mini-transcribe-model" value="gpt-4o-mini-transcribe">
+                    <label for="gpt-4o-mini-transcribe-model">openai/gpt-4o-mini-transcribe</label>
+                </div>
+                <div class="model-checkbox">
+                    <input type="checkbox" id="gpt-4o-transcribe-model" value="gpt-4o-transcribe">
+                    <label for="gpt-4o-transcribe-model">openai/gpt-4o-transcribe</label>
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="language">Language:</label>
-                <input type="text" id="language" value="nb" placeholder="Language code (e.g., nb for Norwegian Bokmål, en for English)">
-                <small class="helper-text">Examples: nb (Norwegian Bokmål), en (English), de (German), fr (French)</small>
-            </div>
-            
-            <div class="form-group">
                 <button id="transcribe-btn" class="primary-btn">Transcribe</button>
-            </div>
-            
-            <div class="form-group settings-container">
                 <button id="settings-btn" class="secondary-btn">
                     <span class="gear-icon">⚙️</span> Settings
                 </button>
             </div>
         </div>
         
-        <div class="results-panel">
-            <h2>Transcription Results</h2>
-            <div class="results-actions">
-                <button id="compare-btn" class="secondary-btn" disabled>Compare Transcriptions</button>
-            </div>
+        <div class="section">
+            <h2>Review</h2>
             <div id="results-container">
                 <!-- Results will be added here dynamically -->
                 <div class="no-results-message">Select models and transcribe to see results</div>
             </div>
             <div id="error-message" class="error-box hidden"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Analyze</h2>
+            <div class="analyze-buttons">
+                <button id="diff-btn" class="analyze-btn" disabled>Diff</button>
+                <button id="likelihood-map-btn" class="analyze-btn" disabled>Likelihood Map</button>
+                <!-- More analyze buttons can be added here -->
+            </div>
         </div>
     </div>
 

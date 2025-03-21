@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileDetails = document.getElementById('file-details');
     const languageInput = document.getElementById('language');
     const transcribeBtn = document.getElementById('transcribe-btn');
-    const compareBtn = document.getElementById('compare-btn');
     const errorMessage = document.getElementById('error-message');
     
     // Get all model checkboxes
@@ -72,8 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsManager.createResultCard(modelId, 'Processing...');
         });
         
-        // Toggle layout class based on number of models
-        resultsManager.setSideBySideLayout(selectedModels.length >= 2);
+        // Create a "not run" card for each model that was not selected
+        Object.keys(TRANSCRIPTION_MODELS).forEach(modelId => {
+            if (!selectedModels.includes(modelId)) {
+                resultsManager.createResultCard(modelId, 'Processing...', null, false);
+            }
+        });
         
         // Process each model
         try {
@@ -84,8 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Wait for all transcriptions to complete
             await Promise.all(transcriptionPromises);
             
-            // Compare button is disabled in this version
-            compareBtn.disabled = true;
         } catch (error) {
             console.error('One or more transcriptions failed:', error);
             // Individual errors are handled in processTranscription
@@ -96,9 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Compare button is disabled in this version
-    compareBtn.addEventListener('click', () => {
-        // Functionality removed
+    // Set up analyze buttons
+    const diffBtn = document.getElementById('diff-btn');
+    const likelihoodMapBtn = document.getElementById('likelihood-map-btn');
+
+    diffBtn.addEventListener('click', () => {
+        // Will be implemented later
+        toast.show('Diff functionality will be implemented later');
+    });
+
+    likelihoodMapBtn.addEventListener('click', () => {
+        // Will be implemented later
+        toast.show('Likelihood map functionality will be implemented later');
     });
     
     // Process transcription for a single model
