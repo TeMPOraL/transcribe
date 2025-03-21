@@ -126,7 +126,7 @@ class ResultsManager {
                 timeEl.textContent = `(${processingTime}s)`;
             }
             
-            // Update toggle button to "▼" (expand/collapse)
+            // Update or create toggle button for expand/collapse
             let toggleBtn = resultCard.querySelector('.toggle-btn');
             if (toggleBtn) {
                 toggleBtn.innerHTML = '<span title="Show/hide transcription">▼</span>';
@@ -148,9 +148,9 @@ class ResultsManager {
                 downloadBtn.innerHTML = '<span title="Download as text file">💾</span>';
                 downloadBtn.addEventListener('click', () => this.downloadTranscription(modelId));
                 
-                // Insert before the toggle button
-                actionsContainer.insertBefore(downloadBtn, toggleBtn);
-                actionsContainer.insertBefore(copyBtn, downloadBtn);
+                // Add buttons to the actions container
+                actionsContainer.appendChild(copyBtn);
+                actionsContainer.appendChild(downloadBtn);
             }
             
             // Store the transcription
