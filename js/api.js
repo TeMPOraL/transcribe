@@ -20,44 +20,43 @@ class TranscriptionAPI {
 
         const formData = new FormData();
         
-        // Enhanced file handling for Whisper model
-        if (modelId === 'whisper-1') {
-            // Get file extension and ensure proper MIME type
-            const fileExtension = audioFile.name.split('.').pop().toLowerCase();
-            let mimeType;
-            
-            // Map file extensions to appropriate MIME types
-            switch (fileExtension) {
-                case 'm4a':
-                    mimeType = 'audio/mp4';
-                    break;
-                case 'mp3':
-                    mimeType = 'audio/mpeg';
-                    break;
-                case 'wav':
-                    mimeType = 'audio/wav';
-                    break;
-                case 'ogg':
-                case 'oga':
-                    mimeType = 'audio/ogg';
-                    break;
-                case 'flac':
-                    mimeType = 'audio/flac';
-                    break;
-                case 'webm':
-                    mimeType = 'audio/webm';
-                    break;
-                default:
-                    mimeType = audioFile.type || 'audio/mpeg';
-            }
-            
-            // Create a new file with explicit MIME type
-            const renamedFile = new File([audioFile], audioFile.name, { type: mimeType });
-            formData.append('file', renamedFile);
-        } else {
-            // For other models, use the file as is
-            formData.append('file', audioFile);
+        // Enhanced file handling for all models to ensure correct MIME types
+        const fileExtension = audioFile.name.split('.').pop().toLowerCase();
+        let mimeType;
+        
+        // Map file extensions to appropriate MIME types
+        switch (fileExtension) {
+            case 'm4a':
+                mimeType = 'audio/mp4';
+                break;
+            case 'mp3':
+                mimeType = 'audio/mpeg';
+                break;
+            case 'wav':
+                mimeType = 'audio/wav';
+                break;
+            case 'ogg':
+            case 'oga':
+                mimeType = 'audio/ogg';
+                break;
+            case 'flac':
+                mimeType = 'audio/flac';
+                break;
+            case 'webm':
+                mimeType = 'audio/webm';
+                break;
+            case 'mp4':
+                mimeType = 'video/mp4';
+                break;
+            default:
+                mimeType = audioFile.type || 'audio/mpeg';
         }
+        
+        console.log(`Processing file: ${audioFile.name}, extension: ${fileExtension}, mime type: ${mimeType}`);
+        
+        // Create a new file with explicit MIME type
+        const renamedFile = new File([audioFile], audioFile.name, { type: mimeType });
+        formData.append('file', renamedFile);
         
         formData.append('model', modelId);
         
@@ -74,6 +73,17 @@ class TranscriptionAPI {
         }
 
         try {
+            console.log(`Sending request to ${this.apiBaseUrl}/${model.endpoint} with model: ${modelId}`);
+            
+            // Log formData contents for debugging
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'file') {
+                    console.log(`FormData: ${key} = ${value}`);
+                } else {
+                    console.log(`FormData: file = ${value.name}, type: ${value.type}, size: ${value.size} bytes`);
+                }
+            }
+            
             const response = await fetch(`${this.apiBaseUrl}/${model.endpoint}`, {
                 method: 'POST',
                 headers: {
@@ -84,12 +94,17 @@ class TranscriptionAPI {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error?.message || `API error: ${response.status} ${response.statusText}`);
+                console.error('API Error Details:', errorData);
+                
+                // Create a more detailed error message
+                const errorMessage = errorData.error?.message || `API error: ${response.status} ${response.statusText}`;
+                throw new Error(`Transcription failed: ${errorMessage}`);
             }
 
             // Get the response as text (since we're requesting response_format=text)
             return await response.text();
         } catch (error) {
+            console.error('Error during transcription:', error);
             throw error;
         }
     }
