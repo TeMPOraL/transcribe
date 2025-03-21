@@ -356,12 +356,25 @@ input[type="file"] {
 /* Result card header with checkbox */
 .result-header {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto auto 1fr auto;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     padding: 10px 15px;
     background-color: #f5f7f9;
     border-bottom: 1px solid var(--border-color);
+}
+
+/* Adjust positioning of elements */
+.play-btn {
+    margin-right: 4px;
+}
+
+.model-label {
+    padding-left: 4px;
+}
+
+.result-actions {
+    justify-self: end;
 }
 
 .result-select {

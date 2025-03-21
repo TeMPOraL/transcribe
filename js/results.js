@@ -85,9 +85,9 @@ class ResultsManager {
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'result-actions';
         
-        // Add elements to header - note the new order
-        header.appendChild(playBtn);
+        // Add elements to header - in the requested order
         header.appendChild(checkbox);
+        header.appendChild(playBtn);
         header.appendChild(modelLabel);
         header.appendChild(actionsContainer);
         
