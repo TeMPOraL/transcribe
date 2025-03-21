@@ -312,9 +312,9 @@ class ResultsManager {
                 downloadBtn.innerHTML = '<span title="Download as text file">💾</span>';
                 downloadBtn.addEventListener('click', () => this.downloadTranscription(modelId));
                 
-                // Insert before the toggle button
-                actionsContainer.insertBefore(copyBtn, playBtn);
-                actionsContainer.insertBefore(downloadBtn, playBtn);
+                // Add buttons to actions container
+                actionsContainer.appendChild(copyBtn);
+                actionsContainer.appendChild(downloadBtn);
             }
             
             // Update UI
