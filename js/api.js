@@ -19,7 +19,46 @@ class TranscriptionAPI {
         }
 
         const formData = new FormData();
-        formData.append('file', audioFile);
+        
+        // Enhanced file handling for Whisper model
+        if (modelId === 'whisper-1') {
+            // Get file extension and ensure proper MIME type
+            const fileExtension = audioFile.name.split('.').pop().toLowerCase();
+            let mimeType;
+            
+            // Map file extensions to appropriate MIME types
+            switch (fileExtension) {
+                case 'm4a':
+                    mimeType = 'audio/mp4';
+                    break;
+                case 'mp3':
+                    mimeType = 'audio/mpeg';
+                    break;
+                case 'wav':
+                    mimeType = 'audio/wav';
+                    break;
+                case 'ogg':
+                case 'oga':
+                    mimeType = 'audio/ogg';
+                    break;
+                case 'flac':
+                    mimeType = 'audio/flac';
+                    break;
+                case 'webm':
+                    mimeType = 'audio/webm';
+                    break;
+                default:
+                    mimeType = audioFile.type || 'audio/mpeg';
+            }
+            
+            // Create a new file with explicit MIME type
+            const renamedFile = new File([audioFile], audioFile.name, { type: mimeType });
+            formData.append('file', renamedFile);
+        } else {
+            // For other models, use the file as is
+            formData.append('file', audioFile);
+        }
+        
         formData.append('model', modelId);
         
         // Add language if provided
